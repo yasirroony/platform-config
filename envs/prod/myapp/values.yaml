@@ -1,0 +1,14 @@
+# prod: image.tag is changed only by an approved promotion PR (see CODEOWNERS).
+replicaCount: 3
+image:
+  tag: "bootstrap"
+resources:
+  requests: { cpu: 250m, memory: 256Mi }
+  limits:   { cpu: "1", memory: 512Mi }
+autoscaling:
+  enabled: true
+  minReplicas: 3
+  maxReplicas: 10
+env:
+  GREETING: hello
+  LOG_LEVEL: warn

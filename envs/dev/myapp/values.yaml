@@ -1,0 +1,7 @@
+# dev: image.tag is bumped automatically by myapp's CI on every merge to main.
+replicaCount: 1
+image:
+  tag: "bootstrap"
+env:
+  GREETING: hello from dev
+  LOG_LEVEL: debug

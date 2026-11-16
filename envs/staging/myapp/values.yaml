@@ -1,0 +1,7 @@
+# staging: image.tag is changed by a promotion PR (Actions → promote).
+replicaCount: 2
+image:
+  tag: "bootstrap"
+env:
+  GREETING: hello from staging
+  LOG_LEVEL: info

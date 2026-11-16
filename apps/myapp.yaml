@@ -1,0 +1,46 @@
+# One ApplicationSet generates myapp-dev, myapp-staging and myapp-prod.
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: myapp
+  namespace: argocd
+spec:
+  goTemplate: true
+  generators:
+    - list:
+        elements:
+          - env: dev
+            autoSync: "true"
+          - env: staging
+            autoSync: "true"
+          - env: prod
+            autoSync: "false"     # prod: a person presses Sync after the approved PR
+  template:
+    metadata:
+      name: "myapp-{{ .env }}"
+    spec:
+      project: default
+      sources:
+        - repoURL: https://github.com/YOUR_GITHUB_USER/myapp.git
+          targetRevision: main
+          path: chart
+          helm:
+            valueFiles:
+              - "$config/envs/{{ .env }}/myapp/values.yaml"
+        - repoURL: https://github.com/YOUR_GITHUB_USER/platform-config.git
+          targetRevision: main
+          ref: config
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: "myapp-{{ .env }}"
+      syncPolicy:
+        syncOptions:
+          - CreateNamespace=true
+  templatePatch: |
+    {{- if eq .autoSync "true" }}
+    spec:
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+    {{- end }}

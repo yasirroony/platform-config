@@ -1,0 +1,28 @@
+# Developers can edit dev and only view prod. Group names come from your identity provider.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: developers-edit
+  namespace: myapp-dev
+subjects:
+  - kind: Group
+    name: myapp-developers
+    apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: ClusterRole
+  name: edit
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: developers-view
+  namespace: myapp-prod
+subjects:
+  - kind: Group
+    name: myapp-developers
+    apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: ClusterRole
+  name: view
+  apiGroup: rbac.authorization.k8s.io

@@ -1,0 +1,49 @@
+name: promote
+
+on:
+  workflow_dispatch:
+    inputs:
+      app:
+        description: "App to promote"
+        default: "myapp"
+      from:
+        description: "Source environment"
+        type: choice
+        options: [dev, staging]
+        default: dev
+      to:
+        description: "Target environment"
+        type: choice
+        options: [staging, prod]
+        default: staging
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Copy the image tag and open a PR
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          APP: ${{ inputs.app }}
+          FROM: ${{ inputs.from }}
+          TO: ${{ inputs.to }}
+        run: |
+          TAG=$(yq '.image.tag' "envs/$FROM/$APP/values.yaml")
+          CURRENT=$(yq '.image.tag' "envs/$TO/$APP/values.yaml")
+          if [ "$TAG" = "$CURRENT" ]; then
+            echo "$TO already runs $TAG; nothing to promote."
+            exit 0
+          fi
+          BRANCH="promote-$APP-$TO-$TAG"
+          git config user.name  "release-bot"
+          git config user.email "release-bot@users.noreply.github.com"
+          git switch -c "$BRANCH"
+          yq -i ".image.tag = \"$TAG\"" "envs/$TO/$APP/values.yaml"
+          git commit -am "promote($TO): $APP $TAG"
+          git push -u origin "$BRANCH"
+          gh pr create --base main --title "promote($TO): $APP $TAG" \
+            --body "Promotes \`$APP\` from **$FROM** to **$TO**: \`$CURRENT\` → \`$TAG\`. Same image, no rebuild."
