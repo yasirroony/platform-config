@@ -21,13 +21,13 @@ spec:
     spec:
       project: default
       sources:
-        - repoURL: https://github.com/YOUR_GITHUB_USER/myapp.git
+        - repoURL: https://github.com/yasirroony/myapp.git
           targetRevision: main
           path: chart
           helm:
             valueFiles:
               - "$config/envs/{{ .env }}/myapp/values.yaml"
-        - repoURL: https://github.com/YOUR_GITHUB_USER/platform-config.git
+        - repoURL: https://github.com/yasirroony/platform-config.git
           targetRevision: main
           ref: config
       destination:
